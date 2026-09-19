@@ -1,0 +1,163 @@
+.TH GUARA 1 "2026-09-19" "guara 0.1.0" "Guará manual"
+.SH NAME
+guara \- filesystem search, tracking, and light security signals
+.SH SYNOPSIS
+.B guara
+[\fIPATTERN\fR] [\fIROOTS\fR]... [\fIOPTIONS\fR]
+.br
+.B guara
+\fICOMMAND\fR [\fIARGS\fR]...
+.SH DESCRIPTION
+.B guara
+searches file names and file contents in one pass, attaches lightweight
+security signals to every hit, and never mutates the filesystem unless an
+explicit flag asks it to. Running
+.B guara
+without a subcommand is the same as
+.BR "guara search" .
+.PP
+Statistics and warnings go to standard error, so
+.B \-\-json
+on standard output stays machine-readable. Exit codes: 0 when at least one hit
+was printed (or a non-search command succeeded), 1 when a search found nothing,
+2 for usage or configuration errors, and 3 when the run finished with partial
+filesystem errors.
+.SH COMMANDS
+.TP
+.B search
+Search names and contents. This is the default command.
+.TP
+.B config
+Print the configuration file path and the effective settings as JSON.
+.TP
+.B index
+Build or update the persistent SQLite index.
+.B "index status"
+reports the path count, database path, and last update time.
+.TP
+.B reindex
+Rebuild the index from scratch for the given roots.
+.TP
+.B history
+Print recent local search queries.
+.TP
+.B serve
+Watch the roots and update the index as files change until interrupted.
+.BI \-\-socket [= PATH ]
+also listens for the tray and palette IPC protocol on a local Unix socket.
+.TP
+.B tui
+Browse results in a terminal UI: incremental filter, preview pane, open with
+.BR $EDITOR ,
+and re-run the heuristics on the selected path. Without a terminal it prints
+the results like
+.BR search .
+.SH SEARCH OPTIONS
+.TP
+.BI \-e ", " \-\-regex
+Treat the pattern as a regular expression.
+.TP
+.BR \-i ", " \-\-ignore\-case
+Case-insensitive matching.
+.TP
+.BR \-w ", " \-\-word
+Match whole words only.
+.TP
+.BI \-t ", " \-\-term " PATTERN"
+Add another pattern. Multiple patterns default to AND.
+.TP
+.B \-\-or
+Match any pattern instead of all of them.
+.TP
+.BI \-\-context " N"
+Print
+.I N
+lines before and after each content match.
+.TP
+.BI \-\-max\-count " N"
+Stop after
+.I N
+hits (0 means unlimited).
+.TP
+.BI \-\-max\-depth " N"
+Limit directory depth. 1 means only top-level entries.
+.TP
+.B \-\-follow\-symlinks
+Follow symlinks. The default is not to follow them.
+.TP
+.BI \-\-ext " EXT"
+Restrict to a file extension. Repeatable.
+.TP
+.BI \-\-min\-size " SIZE" ", " \-\-max\-size " SIZE"
+Filter by size in bytes, or with a
+.BR k ,
+.B m
+or
+.B g
+suffix (for example
+.BR 10M ).
+.TP
+.BI \-\-after " DATE" ", " \-\-before " DATE"
+Filter by modification date,
+.IR YYYY\-MM\-DD .
+.TP
+.B \-\-binary
+Include binary files in content search. They are skipped by default.
+.TP
+.BR \-\-json ", " \-\-csv ", " \-\-html
+Emit one JSON object per hit, CSV, or a self-contained HTML report.
+.TP
+.BR \-\-compact ", " \-\-table
+One line per file, or a tabular mode.
+.TP
+.BI \-\-color " WHEN"
+.I always
+,
+.IR never ,
+or
+.IR auto .
+.B NO_COLOR
+is honored.
+.TP
+.B \-\-deep\-scan
+Opt in to the deep scanners, which need a matching Cargo feature at build time
+and a backend flag
+.RB ( \-\-clamd\-socket ,
+.BR \-\-rules\-dir ,
+.BR \-\-hash\-db ).
+.TP
+.B \-\-quarantine
+Move flagged files into
+.B \-\-quarantine\-dir
+and record them in a manifest. Report-only by default; never deletes in place.
+.TP
+.B \-\-no\-index
+Always walk the filesystem instead of answering from the index.
+.SH FILES
+.TP
+.I <config_dir>/guara/config.toml
+Optional TOML configuration. CLI flags win over the file, which wins over the
+built-in defaults.
+.TP
+.I <data_dir>/guara/index.db
+Persistent index (SQLite).
+.TP
+.I <data_dir>/guara/guara.sock
+Local IPC socket used by
+.BR "guara serve \-\-socket" .
+.TP
+.I <config_dir>/guara/tray.json
+Tray preferences: auto-start (off by default), pinned scopes, recent queries.
+.SH SECURITY MODEL
+The always-on heuristics report, they do not act: quarantine requires both
+.B \-\-quarantine
+and a destination directory, and files are moved, never deleted. Guará offers no
+real-time protection, cannot guarantee detection, and performs no network
+reputation lookup or telemetry. See the threat model in the documentation.
+.SH SEE ALSO
+Documentation in the repository:
+.IR README.md ,
+.IR docs/architecture/overview.md ,
+.IR docs/tray.md .
+.SH LICENSE
+MIT.

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Guará quick search</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <input
+        id="query"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Search names and contents, then Enter"
+      />
+      <span id="state" class="state idle">idle</span>
+    </header>
+
+    <section id="results" aria-live="polite"></section>
+
+    <aside id="side">
+      <div class="block">
+        <h2>Pinned scopes</h2>
+        <ul id="pins"></ul>
+        <button id="pin" type="button">Pin current root</button>
+      </div>
+      <div class="block">
+        <h2>Recent</h2>
+        <ul id="recents"></ul>
+      </div>
+    </aside>
+
+    <footer>
+      <span id="status">Enter search · ↑↓ move · o open · s scan · Ctrl+Shift+G toggles this window</span>
+      <label class="autostart">
+        <input id="autostart" type="checkbox" />
+        Start at login
+      </label>
+    </footer>
+
+    <script src="main.js"></script>
+  </body>
+</html>

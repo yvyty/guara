@@ -1,0 +1,117 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: aarch64-apple-darwin
+            archive: guara-v${{ github.ref_name }}-aarch64-apple-darwin.tar.gz
+          - os: macos-13
+            target: x86_64-apple-darwin
+            archive: guara-${{ github.ref_name }}-x86_64-apple-darwin.tar.gz
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: guara-${{ github.ref_name }}-x86_64-unknown-linux-gnu.tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: guara-${{ github.ref_name }}-x86_64-pc-windows-msvc.zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      # Default features only: no ClamAV / YARA / hash dependencies.
+      - run: cargo build --release -p guara --target ${{ matrix.target }}
+
+      - name: Package (unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp "target/${{ matrix.target }}/release/guara" dist/guara
+          cp README.md LICENSE CHANGELOG.md dist/
+          mkdir -p dist/docs/man
+          cp docs/man/guara.1 dist/docs/man/
+          tar -C dist -czf "${{ matrix.archive }}" .
+          shasum -a 256 "${{ matrix.archive }}" > "${{ matrix.archive }}.sha256"
+
+      - name: Package (windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp "target/${{ matrix.target }}/release/guara.exe" dist/guara.exe
+          cp README.md LICENSE CHANGELOG.md dist/
+          powershell -Command "Compress-Archive -Path dist/* -DestinationPath '${{ matrix.archive }}'"
+          certutil -hashfile "${{ matrix.archive }}" SHA256 > "${{ matrix.archive }}.sha256"
+
+      - name: Smoke test the archive
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p smoke && tar -C smoke -xzf "${{ matrix.archive }}"
+          ./smoke/guara --version
+          ./smoke/guara --help > /dev/null
+
+      - name: Smoke test the archive (windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          powershell -Command "Expand-Archive -Path '${{ matrix.archive }}' -DestinationPath smoke"
+          ./smoke/guara.exe --version
+          ./smoke/guara.exe --help > /dev/null
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: |
+            ${{ matrix.archive }}
+            ${{ matrix.archive }}.sha256
+          if-no-files-found: error
+
+  publish:
+    name: publish release assets
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+      - name: List assets
+        run: ls -l assets
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" assets/* --clobber
+          else
+            gh release create "$tag" assets/* \
+              --title "Guará $tag" \
+              --notes "See CHANGELOG.md for what changed in this release. Artifacts: macOS arm64/x86_64, Linux x86_64, Windows x86_64."
+          fi

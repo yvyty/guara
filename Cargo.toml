@@ -1,0 +1,20 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/guara",
+    "crates/guara-core",
+    "crates/guara-tray",
+]
+# The tray app needs a desktop toolchain and a long compile, so the default
+# cargo commands (fmt/clippy/test/build) stay on the CLI and library crates.
+# Build it explicitly with `cargo build -p guara-tray`.
+default-members = [
+    "crates/guara",
+    "crates/guara-core",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.74"
