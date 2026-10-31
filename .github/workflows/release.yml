@@ -15,12 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14
-            target: aarch64-apple-darwin
-            archive: guara-${{ github.ref_name }}-aarch64-apple-darwin.tar.gz
-          - os: macos-13
-            target: x86_64-apple-darwin
-            archive: guara-${{ github.ref_name }}-x86_64-apple-darwin.tar.gz
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             archive: guara-${{ github.ref_name }}-x86_64-unknown-linux-gnu.tar.gz
@@ -118,5 +112,5 @@ jobs:
           else
             gh release create "$tag" assets/* \
               --title "Guará $tag" \
-              --notes "See CHANGELOG.md for what changed in this release. Artifacts: macOS arm64/x86_64, Linux x86_64, Windows x86_64. Shell installer: guara-installer.sh."
+              --notes "See CHANGELOG.md for what changed in this release. Artifacts: Linux x86_64, Windows x86_64. Shell installer: guara-installer.sh."
           fi

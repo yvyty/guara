@@ -20,16 +20,6 @@ os=$(uname -s)
 arch=$(uname -m)
 
 case "$os" in
-    Darwin)
-        case "$arch" in
-            arm64|aarch64) target="aarch64-apple-darwin" ;;
-            x86_64|amd64) target="x86_64-apple-darwin" ;;
-            *)
-                echo "guara installer: unsupported macOS architecture: $arch" >&2
-                exit 1
-                ;;
-        esac
-        ;;
     Linux)
         case "$arch" in
             x86_64|amd64) target="x86_64-unknown-linux-gnu" ;;
@@ -40,7 +30,7 @@ case "$os" in
         esac
         ;;
     *)
-        echo "guara installer: unsupported OS: $os (use the Windows archive)" >&2
+        echo "guara installer: unsupported OS: $os (tagged releases cover Linux and Windows; build from source on macOS)" >&2
         exit 1
         ;;
 esac

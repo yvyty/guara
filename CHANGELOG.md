@@ -14,11 +14,12 @@ All notable changes to Guará are recorded here. The format follows
 ### Changed
 
 - Dual-licensed under MIT or Apache-2.0.
+- Tagged releases publish Linux x86_64 and Windows x86_64 archives. macOS
+  remains covered by CI build-smoke and builds from source.
 
 ### Fixed
 
 - `[search] threads` and `max_file_size` from the config file are now applied.
-- The macOS arm64 release archive no longer gets a doubled `v` in its name.
 
 ## [0.1.0] - 2026-09-19
 

@@ -205,7 +205,8 @@ cargo test -p guara --test cli
 
 ## Platform notes
 
-- Windows/Linux/macOS are all built by CI's `build-smoke` and `release` jobs.
+- Windows/Linux/macOS are all built by CI's `build-smoke` job. Tagged releases
+  publish Linux x86_64 and Windows x86_64 archives; macOS builds from source.
 - Unix-only code is guarded with `#[cfg(unix)]`: permission bits, the IPC Unix
   socket, and some watcher tests. Provide a `#[cfg(not(unix))]` counterpart that
   degrades cleanly (usually `None`/`Unsupported`).
@@ -223,7 +224,7 @@ cargo test -p guara --test cli
 - One logical change per commit; explain the why.
 - Versioning is workspace-wide (`0.1.0`) and `CHANGELOG.md` follows Keep a
   Changelog. `docs/RELEASE.md` is the tag checklist; the release workflow builds
-  macOS arm64/x86_64, Linux x86_64, and Windows x86_64 archives.
+  Linux x86_64 and Windows x86_64 archives.
 
 ---
 

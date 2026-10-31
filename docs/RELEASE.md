@@ -32,9 +32,9 @@ cargo test --all-features
 - [ ] `git tag -s v0.1.0 -m "v0.1.0"` on the release commit (`-s` if you have a
       signing key; otherwise `git tag -a`).
 - [ ] `git push origin v0.1.0`.
-- [ ] Watch the `release` workflow: it builds macOS arm64/x86_64, Linux x86_64,
-      and Windows x86_64, packages each binary, and attaches the archives to the
-      GitHub release. The job fails if any target misses an artifact.
+- [ ] Watch the `release` workflow: it builds Linux x86_64 and Windows x86_64,
+      packages each binary, and attaches the archives to the GitHub release. The
+      job fails if any target misses an artifact.
 
 ## 2. Notes
 
@@ -57,7 +57,8 @@ available):
       mixed in.
 - [ ] `guara index . && guara needle . && guara index status` works against a
       temporary `--db` path.
-- [ ] On macOS, `guara tui needle .` opens the browser and `q` exits 0.
+- [ ] On a platform with an archive, `guara tui needle .` opens the browser and
+      `q` exits 0.
 - [ ] The archive does not require a system SQLite (the build is `bundled`).
 
 ## 4. Channels
@@ -98,8 +99,8 @@ available):
 > What it deliberately is not: real-time protection, a detector you can trust on
 > its own, or anything that phones home. No telemetry, no network lookups.
 >
-> Get it from the release archives (macOS arm64/x86_64, Linux x86_64, Windows
-> x86_64) or build it from source with `cargo install --path crates/guara`.
+> Get it from the release archives (Linux x86_64, Windows x86_64) or build it
+> from source with `cargo install --path crates/guara`.
 
 ## Changelog automation
 

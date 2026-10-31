@@ -8,6 +8,7 @@ user's files.
 ## Install
 
 ```sh
+# Linux x86_64
 sh -c "$(curl -fsSL https://github.com/yvyty/guara/releases/latest/download/guara-installer.sh)"
 
 # From crates.io, once published
@@ -19,7 +20,7 @@ cargo install --path crates/guara
 
 Prebuilt archives are attached to each tagged release; the tag pipeline in
 [`.github/workflows/release.yml`](.github/workflows/release.yml) builds them for
-macOS (arm64, x86_64), Linux (x86_64), and Windows (x86_64). Distribution
+Linux (x86_64) and Windows (x86_64). macOS builds from source. Distribution
 channels and their status are listed under [Packaging](#packaging).
 
 ## Build
@@ -401,7 +402,7 @@ real-time protection, and OS service units. The reasons are in
 
 | Channel | Status |
 | ------- | ------ |
-| Release archives (macOS arm64/x86_64, Linux x86_64, Windows x86_64) | built by the tagged pipeline |
+| Release archives (Linux x86_64, Windows x86_64) | built by the tagged pipeline |
 | Shell installer script | published by the tagged pipeline |
 | `cargo install guara` | planned for the first crates.io publish |
 | Homebrew tap | planned |
