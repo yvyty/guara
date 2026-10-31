@@ -1,3 +1,4 @@
+use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -9,6 +10,7 @@ use guara_core::fs::{self, WalkOptions};
 use guara_core::index::{self, IndexStore, UpdateOptions};
 use guara_core::search::{self, FileResult, SearchOptions, SearchStats};
 use guara_core::serve::{ServeConfig, Server};
+use indicatif::{ProgressBar, ProgressDrawTarget};
 use tracing_subscriber::EnvFilter;
 
 /// A filesystem search, tracking, and light-security CLI.
@@ -310,6 +312,30 @@ pub struct SearchRun {
     pub walk_errors: usize,
 }
 
+/// Progress is only useful on an interactive stderr, and `--quiet` disables it.
+fn progress_enabled_for(quiet: bool, stderr_is_tty: bool) -> bool {
+    !quiet && stderr_is_tty
+}
+
+/// Start a spinner before a long search, or return `None` when progress is off.
+pub fn start_progress(quiet: bool) -> Option<ProgressBar> {
+    if !progress_enabled_for(quiet, std::io::stderr().is_terminal()) {
+        return None;
+    }
+    let progress = ProgressBar::new_spinner();
+    progress.set_draw_target(ProgressDrawTarget::stderr());
+    progress.set_message("searching...");
+    progress.enable_steady_tick(Duration::from_millis(100));
+    Some(progress)
+}
+
+/// Clear the spinner before any stats or results are printed to stderr.
+pub fn finish_progress(progress: Option<ProgressBar>) {
+    if let Some(progress) = progress {
+        progress.finish_and_clear();
+    }
+}
+
 /// Run the walk-or-index search shared by `guara search` and `guara tui`.
 ///
 /// Loads config, merges CLI flags, prefers the persistent index when it covers
@@ -342,6 +368,7 @@ pub fn collect_search(args: &SearchArgs, db: Option<&Path>) -> Result<SearchRun,
     let walk_opts = WalkOptions {
         max_depth: effective.max_depth,
         follow_symlinks: effective.follow_symlinks,
+        threads: effective.threads,
         global_ignore: effective.ignore,
     };
 
@@ -362,7 +389,8 @@ pub fn collect_search(args: &SearchArgs, db: Option<&Path>) -> Result<SearchRun,
         max_size: args
             .max_size
             .as_deref()
-            .and_then(guara_core::search::parse_size),
+            .and_then(guara_core::search::parse_size)
+            .or(effective.max_file_size),
         after: args
             .after
             .as_deref()
@@ -439,12 +467,15 @@ pub fn collect_search(args: &SearchArgs, db: Option<&Path>) -> Result<SearchRun,
 /// Entry point for the `search` command.
 pub fn run_search(args: SearchArgs, quiet: bool, db: Option<PathBuf>) -> i32 {
     let start = std::time::Instant::now();
+    let progress = start_progress(quiet);
+    let search_run = collect_search(&args, db.as_deref());
+    finish_progress(progress);
 
     let SearchRun {
         mut results,
         stats,
         walk_errors,
-    } = match collect_search(&args, db.as_deref()) {
+    } = match search_run {
         Ok(run) => run,
         Err(code) => return code,
     };
@@ -913,8 +944,10 @@ fn resolve_db(db: Option<PathBuf>) -> Result<PathBuf, i32> {
 fn index_walk_options() -> WalkOptions {
     let config = config::load().unwrap_or_default();
     WalkOptions {
+        max_depth: config.search.max_depth,
+        follow_symlinks: config.search.follow_symlinks,
+        threads: config.search.threads,
         global_ignore: config.search.ignore,
-        ..Default::default()
     }
 }
 
@@ -967,5 +1000,17 @@ fn rebase_results(results: &mut [guara_core::search::FileResult], roots: &[PathB
                 break;
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn progress_is_disabled_by_quiet_or_a_pipe() {
+        assert!(!progress_enabled_for(true, true));
+        assert!(!progress_enabled_for(false, false));
+        assert!(progress_enabled_for(false, true));
     }
 }

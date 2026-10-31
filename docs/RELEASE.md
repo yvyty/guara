@@ -48,6 +48,8 @@ cargo test --all-features
 Download each archive and run it on the platform it targets (or the closest
 available):
 
+- [ ] The release includes `guara-installer.sh` and each archive contains
+      `LICENSE-MIT` and `LICENSE-APACHE`.
 - [ ] `guara --version` prints the released version.
 - [ ] `guara --help` exits 0 and shows the documented flags.
 - [ ] `guara needle .` exits 0 with a hit and 1 with no hit; check both.

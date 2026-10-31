@@ -673,3 +673,60 @@ fn probe_socket(socket: &std::path::Path) -> Result<(), String> {
 
     Ok(())
 }
+
+fn isolated_config_command(home: &std::path::Path) -> Command {
+    let mut cmd = Command::cargo_bin("guara").unwrap();
+    cmd.env("HOME", home)
+        .env("XDG_CONFIG_HOME", home.join("xdg"))
+        .env("APPDATA", home.join("appdata"))
+        .env("LOCALAPPDATA", home.join("localappdata"));
+    cmd
+}
+
+fn effective_config_path(home: &std::path::Path) -> std::path::PathBuf {
+    let mut cmd = isolated_config_command(home);
+    cmd.args(["config"]);
+    let output = cmd.assert().success().get_output().clone();
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    let path = stdout
+        .lines()
+        .find_map(|line| line.strip_prefix("path: "))
+        .expect("config command must print its path");
+    std::path::PathBuf::from(path)
+}
+
+#[test]
+fn config_max_file_size_filters_and_cli_override_wins() {
+    let home = tempfile::TempDir::new().unwrap();
+    let config_path = effective_config_path(home.path());
+    std::fs::create_dir_all(config_path.parent().unwrap()).unwrap();
+    std::fs::write(&config_path, "[search]\nmax_file_size = 1\nthreads = 1\n").unwrap();
+
+    let tree = tempfile::TempDir::new().unwrap();
+    std::fs::write(tree.path().join("hit.txt"), "guara-needle here\n").unwrap();
+
+    let mut cmd = isolated_config_command(home.path());
+    cmd.args([
+        "guara-needle",
+        "--no-index",
+        "-q",
+        tree.path().to_str().unwrap(),
+    ])
+    .assert()
+    .failure()
+    .code(predicate::eq(1))
+    .stdout(predicate::str::is_empty());
+
+    let mut cmd = isolated_config_command(home.path());
+    cmd.args([
+        "guara-needle",
+        "--no-index",
+        "-q",
+        "--max-size",
+        "1k",
+        tree.path().to_str().unwrap(),
+    ])
+    .assert()
+    .success()
+    .stdout(predicate::str::contains("hit.txt"));
+}

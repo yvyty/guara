@@ -19,7 +19,7 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 use ratatui::DefaultTerminal;
 
-use crate::cli::{collect_search, SearchArgs, SearchRun};
+use crate::cli::{collect_search, finish_progress, start_progress, SearchArgs, SearchRun};
 
 /// Keys shown in the footer so the bindings are discoverable.
 const KEY_HINT: &str =
@@ -38,12 +38,15 @@ enum Action {
 /// Entry point for `guara tui`.
 pub fn run(args: SearchArgs, quiet: bool, db: Option<PathBuf>) -> i32 {
     let start = std::time::Instant::now();
+    let progress = start_progress(quiet);
+    let search_run = collect_search(&args, db.as_deref());
+    finish_progress(progress);
 
     let SearchRun {
         results,
         stats,
         walk_errors,
-    } = match collect_search(&args, db.as_deref()) {
+    } = match search_run {
         Ok(run) => run,
         Err(code) => return code,
     };

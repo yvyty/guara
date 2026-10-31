@@ -258,6 +258,23 @@ context = 2
     }
 
     #[test]
+    fn effective_search_keeps_threads_and_max_file_size() {
+        let config = Config {
+            search: SearchSection {
+                threads: Some(4),
+                max_file_size: Some(1024),
+                ..Default::default()
+            },
+            security: Default::default(),
+        };
+
+        let effective = config.effective_search(None, false, false, false, 0, vec![]);
+
+        assert_eq!(effective.threads, Some(4));
+        assert_eq!(effective.max_file_size, Some(1024));
+    }
+
+    #[test]
     fn empty_config_section_ok() {
         let dir = TempDir::new().unwrap();
         let path = dir.path().join("empty.toml");

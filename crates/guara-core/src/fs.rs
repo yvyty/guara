@@ -17,6 +17,8 @@ pub struct WalkOptions {
     pub max_depth: Option<usize>,
     /// Whether to follow symlinks. Default: `false`.
     pub follow_symlinks: bool,
+    /// Number of walker threads. `None` or `0` means automatic.
+    pub threads: Option<usize>,
     /// Global ignore patterns (glob syntax, e.g. `"*.tmp"`, `"target"`).
     /// Applied in addition to `.gitignore` / `.ignore` files.
     pub global_ignore: Vec<String>,
@@ -64,6 +66,10 @@ pub fn walk(roots: &[impl AsRef<Path>], options: &WalkOptions) -> WalkResult {
         .parents(true)
         .hidden(false)
         .require_git(false);
+
+    if let Some(threads) = options.threads.filter(|threads| *threads > 0) {
+        builder.threads(threads);
+    }
 
     // Global ignore patterns (glob syntax, e.g. `"*.tmp"`).
     // Override patterns with `!` prefix exclude matching files.

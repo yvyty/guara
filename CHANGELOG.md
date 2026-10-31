@@ -6,7 +6,19 @@ All notable changes to Guará are recorded here. The format follows
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- Progress spinner on an interactive stderr, hidden by `--quiet` or a pipe.
+- Shell installer asset published with each tagged release.
+
+### Changed
+
+- Dual-licensed under MIT or Apache-2.0.
+
+### Fixed
+
+- `[search] threads` and `max_file_size` from the config file are now applied.
+- The macOS arm64 release archive no longer gets a doubled `v` in its name.
 
 ## [0.1.0] - 2026-09-19
 

@@ -17,7 +17,7 @@ jobs:
         include:
           - os: macos-14
             target: aarch64-apple-darwin
-            archive: guara-v${{ github.ref_name }}-aarch64-apple-darwin.tar.gz
+            archive: guara-${{ github.ref_name }}-aarch64-apple-darwin.tar.gz
           - os: macos-13
             target: x86_64-apple-darwin
             archive: guara-${{ github.ref_name }}-x86_64-apple-darwin.tar.gz
@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           cp "target/${{ matrix.target }}/release/guara" dist/guara
-          cp README.md LICENSE CHANGELOG.md dist/
+          cp README.md LICENSE-MIT LICENSE-APACHE CHANGELOG.md dist/
           mkdir -p dist/docs/man
           cp docs/man/guara.1 dist/docs/man/
           tar -C dist -czf "${{ matrix.archive }}" .
@@ -57,7 +57,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           cp "target/${{ matrix.target }}/release/guara.exe" dist/guara.exe
-          cp README.md LICENSE CHANGELOG.md dist/
+          cp README.md LICENSE-MIT LICENSE-APACHE CHANGELOG.md dist/
           powershell -Command "Compress-Archive -Path dist/* -DestinationPath '${{ matrix.archive }}'"
           certutil -hashfile "${{ matrix.archive }}" SHA256 > "${{ matrix.archive }}.sha256"
 
@@ -100,6 +100,11 @@ jobs:
         with:
           path: assets
           merge-multiple: true
+      - name: Stage the shell installer
+        run: |
+          set -euo pipefail
+          sh -n scripts/guara-installer.sh
+          cp scripts/guara-installer.sh assets/guara-installer.sh
       - name: List assets
         run: ls -l assets
       - name: Create or update the release
@@ -113,5 +118,5 @@ jobs:
           else
             gh release create "$tag" assets/* \
               --title "Guará $tag" \
-              --notes "See CHANGELOG.md for what changed in this release. Artifacts: macOS arm64/x86_64, Linux x86_64, Windows x86_64."
+              --notes "See CHANGELOG.md for what changed in this release. Artifacts: macOS arm64/x86_64, Linux x86_64, Windows x86_64. Shell installer: guara-installer.sh."
           fi
