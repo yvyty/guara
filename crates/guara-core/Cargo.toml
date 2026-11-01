@@ -3,7 +3,10 @@ name = "guara-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 rust-version.workspace = true
+description = "Core engine for Guará: filesystem search, index, watch, IPC, and security heuristics"
+readme = "../../README.md"
 
 [dependencies]
 ignore = "0.4"

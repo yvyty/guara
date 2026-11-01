@@ -3,7 +3,10 @@ name = "guara"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 rust-version.workspace = true
+description = "A fast filesystem search, tracking, and light-security CLI"
+readme = "../../README.md"
 
 [dependencies]
 guara-core = { path = "../guara-core" }

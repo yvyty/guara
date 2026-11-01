@@ -424,6 +424,7 @@ notes for the remaining channels.
 - [docs/tray.md](docs/tray.md): tray app, IPC protocol, per-OS support.
 - [docs/man/guara.1](docs/man/guara.1): man page (`man ./docs/man/guara.1`).
 - [CHANGELOG.md](CHANGELOG.md): what changed per release.
+- [SECURITY.md](SECURITY.md): vulnerability reporting and security scope.
 - [CONTRIBUTING.md](CONTRIBUTING.md) and
   [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): how to work on the project.
 
