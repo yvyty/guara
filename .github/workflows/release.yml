@@ -38,7 +38,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           cp "target/${{ matrix.target }}/release/guara" dist/guara
-          cp README.md LICENSE-MIT LICENSE-APACHE CHANGELOG.md dist/
+          cp README.md LICENSE CHANGELOG.md dist/
           mkdir -p dist/docs/man
           cp docs/man/guara.1 dist/docs/man/
           tar -C dist -czf "${{ matrix.archive }}" .
@@ -51,7 +51,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           cp "target/${{ matrix.target }}/release/guara.exe" dist/guara.exe
-          cp README.md LICENSE-MIT LICENSE-APACHE CHANGELOG.md dist/
+          cp README.md LICENSE CHANGELOG.md dist/
           powershell -Command "Compress-Archive -Path dist/* -DestinationPath '${{ matrix.archive }}'"
           certutil -hashfile "${{ matrix.archive }}" SHA256 > "${{ matrix.archive }}.sha256"
 
