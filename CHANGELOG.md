@@ -13,7 +13,8 @@ All notable changes to Guará are recorded here. The format follows
 
 ### Changed
 
-- Dual-licensed under MIT or Apache-2.0.
+- Licensed under MIT only. v0.1.0 was published under MIT OR Apache-2.0
+  and remains available under those terms.
 - Tagged releases publish Linux x86_64 and Windows x86_64 archives. macOS
   remains covered by CI build-smoke and builds from source.
 

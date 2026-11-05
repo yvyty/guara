@@ -430,9 +430,4 @@ notes for the remaining channels.
 
 ## License
 
-Dual-licensed under either of:
-
-- MIT license ([LICENSE-MIT](LICENSE-MIT))
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
-
-You may use this project under the terms of either license.
+Licensed under the [MIT license](LICENSE).
